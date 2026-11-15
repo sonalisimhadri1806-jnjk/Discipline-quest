@@ -42,6 +42,12 @@ footer{text-align:center;color:#77798d;font-size:10px;margin-top:28px}
 .quote-box blockquote{font-size:21px;line-height:1.45;font-weight:750;color:#f6e8c8;margin:18px 0}
 .quote-box .qreward{font-size:24px;color:#e7bd63;font-weight:850}
 @media(max-width:430px){.v2grid{grid-template-columns:1fr}}
+
+.v3stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.v3card{background:#222438;border:1px solid #383b52;border-radius:13px;padding:12px}.v3card b{display:block;font-size:19px;color:#f4e0b2}.v3card small{color:#a5a6b8;font-size:10px;letter-spacing:.05em}
+.chart{display:flex;align-items:end;gap:8px;height:130px;padding:12px 4px 0;border-bottom:1px solid #45475c}.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:5px;min-width:0}.chart-bar{width:min(100%,24px);min-height:3px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#e7bd63,#85612d)}.chart-col small{font-size:9px;color:#a5a6b8}.chart-col em{font-style:normal;font-size:9px;color:#f4e1b7}
+.task-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}.tag{font-size:9px;border:1px solid #484b63;color:#c4c5d1;padding:2px 6px;border-radius:99px}.tag.high{border-color:#8c4d53;color:#ffb7b7}.tag.urgent{border-color:#bd7940;color:#ffd19a}
+.field select{min-height:42px}.reminder-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.hint{font-size:10px;color:#a5a6b8;margin-top:8px}
+@media(max-width:430px){.v3stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -64,6 +70,9 @@ footer{text-align:center;color:#77798d;font-size:10px;margin-top:28px}
    <div class="field"><label for="task-time">SCHEDULED TIME</label><input id="task-time" type="time" value="18:00"></div>
    <div class="field"><label for="task-reward">CROWN REWARD</label><input id="task-reward" type="number" min="1" max="500" value="10" required></div>
    <div class="field"><label for="task-icon">ICON</label><select id="task-icon"><option>📚</option><option>💻</option><option>🏃</option><option>🧘</option><option>🎨</option><option>✍️</option><option>🎯</option><option>💪</option><option>🎧</option></select></div>
+   <div class="field"><label for="task-category">CATEGORY</label><select id="task-category"><option>Study</option><option>Coding</option><option>Fitness</option><option>Personal</option><option>Creative</option><option>Other</option></select></div>
+   <div class="field"><label for="task-priority">PRIORITY</label><select id="task-priority"><option>Normal</option><option>Important</option><option>Urgent</option></select></div>
+   <div class="field full"><label for="task-repeat">REPEAT SCHEDULE</label><select id="task-repeat"><option value="daily">Every day</option><option value="weekdays">Weekdays (Mon–Fri)</option><option value="weekends">Weekends (Sat–Sun)</option></select></div>
   </div>
   <div class="form-actions"><button class="btn" type="submit">SAVE MISSION</button><button class="btn secondary" type="button" id="cancel-form">CANCEL</button></div>
  </form>
@@ -75,6 +84,8 @@ footer{text-align:center;color:#77798d;font-size:10px;margin-top:28px}
   <div><div class="eyebrow">CURRENT MISSION</div><div class="timer-title" id="timer-task">Choose a mission</div><div class="timer-note" id="timer-note">Select Start on a mission to begin.</div><div class="timer-controls"><button class="btn" id="start-btn" disabled>START</button><button class="btn secondary" id="pause-btn" disabled>PAUSE</button><button class="btn secondary" id="resume-btn" disabled>RESUME</button><button class="btn danger" id="reset-btn" disabled>RESET</button></div></div>
  </div>
 </section>
+<section class="panel" id="analytics-panel"><h3>COMMAND CENTER · PRODUCTIVITY</h3><div class="v3stats"><div class="v3card"><b id="stat-week-tasks">0</b><small>TASKS THIS WEEK</small></div><div class="v3card"><b id="stat-week-hours">0m</b><small>FOCUS THIS WEEK</small></div><div class="v3card"><b id="stat-total-hours">0m</b><small>TOTAL FOCUS</small></div><div class="v3card"><b id="stat-rate">0%</b><small>7-DAY COMPLETION</small></div><div class="v3card"><b id="stat-best">—</b><small>TOP CATEGORY</small></div><div class="v3card"><b id="stat-xp">0</b><small>TOTAL XP</small></div></div><div class="section-head"><h2>LAST 7 DAYS · FOCUSED MINUTES</h2><span class="muted">Timer sessions</span></div><div class="chart" id="focus-chart"></div><div class="section-head"><h2>CATEGORY BREAKDOWN</h2></div><div id="category-breakdown" class="v2grid"></div></section>
+<section class="panel"><h3>REMINDERS</h3><div class="reminder-row"><button class="btn secondary" id="enable-reminders">ENABLE NOTIFICATIONS</button><span class="muted" id="reminder-status">Notifications not enabled</span></div><div class="hint">Reminders are checked while Discipline Quest is open. Your browser may restrict notifications when the app is fully closed.</div></section>
 <section class="panel"><h3>RECENT HISTORY</h3><div class="history" id="history"></div></section>
 <section class="panel"><h3>ACHIEVEMENT GALLERY</h3><div class="v2grid" id="achievements"></div></section>
 <section class="panel"><h3>MONTHLY QUEST CALENDAR <span class="muted" id="month-label"></span></h3><div class="monthgrid" id="month-calendar"></div></section>
@@ -86,9 +97,9 @@ footer{text-align:center;color:#77798d;font-size:10px;margin-top:28px}
 <script>
 const KEY='disciplineQuest.v1';
 const todayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
-const defaultState=()=>({tasks:[],crowns:0,xp:0,streak:0,lastPerfect:null,day:todayKey(),days:{},timer:null,selected:null,penaltyDates:[],quoteHistory:[],unlocked:[]});
+const defaultState=()=>({tasks:[],crowns:0,xp:0,streak:0,lastPerfect:null,day:todayKey(),days:{},timer:null,selected:null,penaltyDates:[],quoteHistory:[],unlocked:[],completionLog:[],totalFocusMinutes:0,reminderFired:[]});
 let state=load();
-function load(){try{return {...defaultState(),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return defaultState()}}
+function load(){try{const x={...defaultState(),...JSON.parse(localStorage.getItem(KEY)||'{}')};x.completionLog=x.completionLog||[];x.reminderFired=x.reminderFired||[];x.tasks=x.tasks.map(t=>({...t,category:t.category||'Study',priority:t.priority||'Normal',repeat:t.repeat||'daily',scheduledToday:t.scheduledToday!==false}));return x}catch{return defaultState()}}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function notify(s){const el=document.getElementById('toast');el.textContent=s;el.classList.remove('hidden');clearTimeout(notify.t);notify.t=setTimeout(()=>el.classList.add('hidden'),2600)}
 function dateLabel(){return new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}
@@ -96,37 +107,38 @@ function minutes(n){return n>=60?`${Math.floor(n/60)}h ${n%60?`${n%60}m`:''}`:`$
 function taskFor(id){return state.tasks.find(t=>t.id===id)}
 function rollover(){
  const now=todayKey(); if(state.day===now)return;
- const old=state.day, oldTasks=state.tasks.filter(t=>!t.done);
+ const old=state.day, oldTasks=state.tasks.filter(t=>!t.done&&t.scheduledToday!==false);
  if(oldTasks.length){oldTasks.forEach(t=>{t.pending=true;t.dueFrom=old});state.crowns=Math.max(0,state.crowns-Math.min(15,oldTasks.length*3));state.penaltyDates.push(old);notify(`${oldTasks.length} mission(s) carried over. 3 crowns lost per missed mission (max 15).`)}
- const completed=state.tasks.length>0&&state.tasks.every(t=>t.done);
+ const active=state.tasks.filter(t=>t.scheduledToday!==false); const completed=active.length>0&&active.every(t=>t.done);
  if(completed){state.streak=state.lastPerfect?state.streak+1:1;state.lastPerfect=old}
  else if(state.tasks.length){state.streak=0}
- state.days[old]={done:state.tasks.filter(t=>t.done).length,total:state.tasks.length,perfect:completed};
+ state.days[old]={done:active.filter(t=>t.done).length,total:active.length,perfect:completed};
  // Carry forward unfinished missions, and recreate completed recurring missions for the new day.
- const carried=oldTasks.map(t=>({...t,id:crypto.randomUUID(),done:false,pending:true,pendingFrom:t.dueFrom||old}));
- const recurring=state.tasks.filter(t=>t.recurring!==false&&t.done).map(t=>({...t,id:crypto.randomUUID(),done:false,pending:false,pendingFrom:null}));
+ const carried=oldTasks.map(t=>({...t,id:crypto.randomUUID(),templateId:t.templateId||t.id,done:false,pending:true,pendingFrom:t.dueFrom||old,scheduledToday:true}));
+ const sources=state.tasks.filter(t=>t.recurring!==false); const weekday=new Date(now+'T12:00:00').getDay();
+ const recurring=sources.filter(t=>!carried.some(c=>c.templateId===(t.templateId||t.id))).map(t=>({...t,id:crypto.randomUUID(),templateId:t.templateId||t.id,done:false,pending:false,pendingFrom:null,scheduledToday:t.repeat==='daily'||(t.repeat==='weekdays'&&weekday>=1&&weekday<=5)||(t.repeat==='weekends'&&(weekday===0||weekday===6))}));
  state.tasks=[...carried,...recurring];state.day=now;state.selected=null;state.timer=null;save();
 }
 function updateHeader(){
- const total=state.tasks.length,done=state.tasks.filter(t=>t.done).length,pct=total?Math.round(done/total*100):0;
+ const active=state.tasks.filter(t=>t.scheduledToday!==false),total=active.length,done=active.filter(t=>t.done).length,pct=total?Math.round(done/total*100):0;
  document.getElementById('today').textContent=dateLabel();document.getElementById('crowns').textContent=state.crowns;
  document.getElementById('completed').textContent=`${done}/${total}`;document.getElementById('streak').textContent=state.streak+' 🔥';
  document.getElementById('xp').textContent=state.xp+' XP';document.getElementById('percent').textContent=pct+'%';document.getElementById('progress').style.width=pct+'%';
- document.getElementById('pending-label').textContent=state.tasks.filter(t=>t.pending&&!t.done).length+' pending';
+ document.getElementById('pending-label').textContent=active.filter(t=>t.pending&&!t.done).length+' pending';
  document.getElementById('level').textContent='LEVEL '+(1+Math.floor(state.xp/250));
 }
 function renderTasks(){
  const root=document.getElementById('tasks');root.innerHTML='';
  if(!state.tasks.length){root.innerHTML='<div class="empty">No missions yet. Create your first daily mission to begin your quest.</div>';return}
- [...state.tasks].sort((a,b)=>(a.time||'').localeCompare(b.time||'')).forEach(t=>{
+ [...state.tasks].filter(t=>t.scheduledToday!==false).sort((a,b)=>(a.time||'').localeCompare(b.time||'')).forEach(t=>{
   const el=document.createElement('article');el.className='task '+(t.done?'done':t.pending?'pending':'');
   const status=t.done?'COMPLETED':t.pending?'CARRIED OVER':`${t.time||'No fixed time'} · ${minutes(t.duration)}`;
-  el.innerHTML=`<div class="task-icon">${esc(t.icon||'🎯')}</div><div><div class="task-name">${esc(t.name)}</div><div class="task-meta">${status} · ${minutes(t.duration)}</div></div><div class="task-actions">${t.done?'<span class="reward">✓ DONE</span>':`<span class="reward">+${t.reward} ♛</span><button class="mini" data-act="start" data-id="${t.id}">FOCUS</button>`}<button class="mini" data-act="edit" data-id="${t.id}" aria-label="Edit">✎</button><button class="mini" data-act="delete" data-id="${t.id}" aria-label="Delete">×</button></div>`;
+  el.innerHTML=`<div class="task-icon">${esc(t.icon||'🎯')}</div><div><div class="task-name">${esc(t.name)}</div><div class="task-meta">${status} · ${minutes(t.duration)}</div><div class="task-tags"><span class="tag">${esc(t.category||'Study')}</span><span class="tag ${t.priority==='Urgent'?'urgent':t.priority==='Important'?'high':''}">${esc(t.priority||'Normal')}</span><span class="tag">${({daily:'Daily',weekdays:'Weekdays',weekends:'Weekends'}[t.repeat||'daily'])}</span></div></div><div class="task-actions">${t.done?'<span class="reward">✓ DONE</span>':`<span class="reward">+${t.reward} ♛</span><button class="mini" data-act="start" data-id="${t.id}">FOCUS</button>`}<button class="mini" data-act="edit" data-id="${t.id}" aria-label="Edit">✎</button><button class="mini" data-act="delete" data-id="${t.id}" aria-label="Delete">×</button></div>`;
   root.appendChild(el);
  });
 }
 function renderHistory(){const root=document.getElementById('history');const days=Object.entries(state.days).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);root.innerHTML=days.length?days.map(([d,x])=>`<div class="day-chip"><b>${x.done}/${x.total} ${x.perfect?'🏆':''}</b>${new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</div>`).join(''):'<span class="muted">Your completed days will appear here.</span>'}
-function render(){rollover();updateHeader();renderTasks();renderHistory();renderTimer();renderAchievements();renderMonthCalendar()}
+function render(){rollover();updateHeader();renderTasks();renderHistory();renderTimer();renderAchievements();renderMonthCalendar();renderAnalytics()}
 function startTask(id){const t=taskFor(id);if(!t||t.done)return;state.selected=id;state.timer={id,status:'ready',duration:t.duration*60,remaining:t.duration*60};save();renderTimer();notify('Mission selected. Press START when you are ready.')}
 function fmt(s){s=Math.max(0,Math.ceil(s));return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
 function renderTimer(){
@@ -138,10 +150,24 @@ function renderTimer(){
  arc.style.strokeDashoffset=408.4*(1-rem/tm.duration);
  document.getElementById('start-btn').disabled=tm.status!=='ready';document.getElementById('pause-btn').disabled=tm.status!=='running';document.getElementById('resume-btn').disabled=tm.status!=='paused';document.getElementById('reset-btn').disabled=false;
 }
-function pauseTimer(){if(!state.timer||state.timer.status!=='running')return;state.timer.remaining=Math.max(0,(state.timer.endsAt-Date.now())/1000);state.timer.status='paused';save();renderTimer()}
-function resumeTimer(){if(!state.timer||state.timer.status!=='paused')return;state.timer.endsAt=Date.now()+state.timer.remaining*1000;state.timer.status='running';save();renderTimer()}
+function pauseTimer(){if(!state.timer||state.timer.status!=='running')return;state.timer.remaining=Math.max(0,(state.timer.endsAt-Date.now())/1000);state.timer.focusSeconds=(state.timer.focusSeconds||0)+Math.max(0,(Date.now()-(state.timer.startedAt||Date.now()))/1000);state.timer.status='paused';save();renderTimer()}
+function resumeTimer(){if(!state.timer||state.timer.status!=='paused')return;state.timer.endsAt=Date.now()+state.timer.remaining*1000;state.timer.startedAt=Date.now();state.timer.status='running';save();renderTimer()}
 function resetTimer(){if(!state.timer)return;const t=taskFor(state.timer.id);state.timer={id:state.timer.id,status:'ready',duration:t.duration*60,remaining:t.duration*60};save();renderTimer()}
-function completeTask(id){const t=taskFor(id);if(!t||t.done)return;t.done=true;t.pending=false;state.crowns+=Number(t.reward);state.xp+=Number(t.reward);state.days[state.day]={done:state.tasks.filter(x=>x.done).length,total:state.tasks.length,perfect:state.tasks.length>0&&state.tasks.every(x=>x.done)};state.timer=null;save();render();celebrate(t)}
+function completeTask(id){const t=taskFor(id);if(!t||t.done)return;t.done=true;t.pending=false;const focused=(state.timer?.focusSeconds||0)+(state.timer?.status==='running'?Math.max(0,(Date.now()-(state.timer.startedAt||Date.now()))/1000):0);const mins=Math.max(0,Math.round(focused/60));state.totalFocusMinutes=(state.totalFocusMinutes||0)+mins;state.completionLog=state.completionLog||[];state.completionLog.push({date:state.day,name:t.name,category:t.category||'Study',minutes:mins,reward:Number(t.reward)});state.crowns+=Number(t.reward);state.xp+=Number(t.reward);const active=state.tasks.filter(x=>x.scheduledToday!==false);state.days[state.day]={done:active.filter(x=>x.done).length,total:active.length,perfect:active.length>0&&active.every(x=>x.done)};state.timer=null;save();render();celebrate(t)}
+function renderAnalytics(){
+ const log=state.completionLog||[],now=new Date(),days=[];
+ for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;const items=log.filter(x=>x.date===key);days.push({key,label:d.toLocaleDateString(undefined,{weekday:'short'}),tasks:items.length,minutes:items.reduce((n,x)=>n+(x.minutes||0),0)});}
+ const weekLog=log.filter(x=>days.some(d=>d.key===x.date)),weekMins=weekLog.reduce((n,x)=>n+(x.minutes||0),0),weekDays=Object.entries(state.days).filter(([k])=>days.some(d=>d.key===k));
+ const planned=weekDays.reduce((n,[,v])=>n+(v.total||0),0),done=weekDays.reduce((n,[,v])=>n+(v.done||0),0),rate=planned?Math.round(done/planned*100):0;
+ document.getElementById('stat-week-tasks').textContent=weekLog.length;document.getElementById('stat-week-hours').textContent=fmtMinutes(weekMins);document.getElementById('stat-total-hours').textContent=fmtMinutes(state.totalFocusMinutes||0);document.getElementById('stat-rate').textContent=rate+'%';document.getElementById('stat-xp').textContent=state.xp;
+ const cats={};log.forEach(x=>cats[x.category||'Study']=(cats[x.category||'Study']||0)+1);const best=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];document.getElementById('stat-best').textContent=best?best[0]:'—';
+ const max=Math.max(1,...days.map(d=>d.minutes));document.getElementById('focus-chart').innerHTML=days.map(d=>`<div class="chart-col"><em>${d.minutes||''}</em><div class="chart-bar" style="height:${Math.max(3,d.minutes/max*82)}%"></div><small>${d.label}</small></div>`).join('');
+ const root=document.getElementById('category-breakdown');root.innerHTML=Object.keys(cats).length?Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="v2item"><b>${esc(k)}</b><small>${v} completed mission${v===1?'':'s'}</small></div>`).join(''):'<div class="muted">Complete missions to build your category stats.</div>';
+}
+function fmtMinutes(n){return n>=60?`${Math.floor(n/60)}h ${n%60}m`:`${n}m`}
+async function enableReminders(){if(!('Notification'in window)){notify('Notifications are not supported by this browser.');return}const result=await Notification.requestPermission();document.getElementById('reminder-status').textContent=result==='granted'?'Notifications enabled':result==='denied'?'Notifications blocked in browser settings':'Permission not granted';if(result==='granted')notify('Reminders enabled while the app is open.')}
+document.getElementById('enable-reminders').onclick=enableReminders;
+function checkReminders(){if(!('Notification'in window)||Notification.permission!=='granted')return;const now=new Date(),hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0'),stamp=todayKey()+'T'+hh+':'+mm;state.reminderFired=state.reminderFired||[];state.tasks.filter(t=>t.scheduledToday!==false&&!t.done&&t.time===hh+':'+mm).forEach(t=>{const key=stamp+'|'+t.id;if(state.reminderFired.includes(key))return;new Notification('Discipline Quest · Mission time',{body:`${t.name} is scheduled now. Time to begin your quest!`});state.reminderFired.push(key);save()})}
 const DISCIPLINE_QUOTES=[
 "Small actions repeated daily create extraordinary results.",
 "You do not need to feel ready. You only need to begin.",
@@ -193,18 +219,19 @@ function celebrate(t){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 document.getElementById('quote-dismiss').onclick=()=>document.getElementById('quote-overlay').classList.add('hidden');
 let editing=null;
-document.getElementById('add-toggle').onclick=()=>{editing=null;document.getElementById('task-form').reset();document.getElementById('form-title').textContent='CREATE A MISSION';document.getElementById('form-panel').classList.remove('hidden');document.getElementById('task-name').focus()};
+document.getElementById('add-toggle').onclick=()=>{editing=null;document.getElementById('task-form').reset();document.getElementById('task-category').value='Study';document.getElementById('task-priority').value='Normal';document.getElementById('task-repeat').value='daily';document.getElementById('form-title').textContent='CREATE A MISSION';document.getElementById('form-panel').classList.remove('hidden');document.getElementById('task-name').focus()};
 document.getElementById('cancel-form').onclick=()=>document.getElementById('form-panel').classList.add('hidden');
-document.getElementById('task-form').onsubmit=e=>{e.preventDefault();const obj={name:document.getElementById('task-name').value.trim(),duration:Number(document.getElementById('task-duration').value),time:document.getElementById('task-time').value,reward:Number(document.getElementById('task-reward').value),icon:document.getElementById('task-icon').value};if(!obj.name||obj.duration<1||obj.reward<1)return;
- if(editing){Object.assign(taskFor(editing),obj);if(state.timer?.id===editing)resetTimer()}else state.tasks.push({...obj,id:crypto.randomUUID(),done:false,pending:false,recurring:true});
+document.getElementById('task-form').onsubmit=e=>{e.preventDefault();const obj={name:document.getElementById('task-name').value.trim(),duration:Number(document.getElementById('task-duration').value),time:document.getElementById('task-time').value,reward:Number(document.getElementById('task-reward').value),icon:document.getElementById('task-icon').value,category:document.getElementById('task-category').value,priority:document.getElementById('task-priority').value,repeat:document.getElementById('task-repeat').value,scheduledToday:true};if(!obj.name||obj.duration<1||obj.reward<1)return;
+ if(editing){Object.assign(taskFor(editing),obj);if(state.timer?.id===editing)resetTimer()}else state.tasks.push({...obj,id:crypto.randomUUID(),templateId:null,done:false,pending:false,recurring:true});
  save();document.getElementById('form-panel').classList.add('hidden');render();notify(editing?'Mission updated.':'Mission added to your daily campaign.');editing=null};
-document.getElementById('tasks').onclick=e=>{const b=e.target.closest('button[data-act]');if(!b)return;const {act,id}=b.dataset,t=taskFor(id);if(act==='start')startTask(id);if(act==='delete'){if(confirm(`Delete "${t.name}"?`)){state.tasks=state.tasks.filter(x=>x.id!==id);if(state.timer?.id===id)state.timer=null;save();render()}}if(act==='edit'){editing=id;document.getElementById('form-title').textContent='EDIT MISSION';document.getElementById('task-name').value=t.name;document.getElementById('task-duration').value=t.duration;document.getElementById('task-time').value=t.time||'';document.getElementById('task-reward').value=t.reward;document.getElementById('task-icon').value=t.icon||'🎯';document.getElementById('form-panel').classList.remove('hidden')}}
-document.getElementById('start-btn').onclick=()=>{if(state.timer?.status==='ready'){state.timer.status='running';state.timer.endsAt=Date.now()+state.timer.remaining*1000;save();renderTimer()}};
+document.getElementById('tasks').onclick=e=>{const b=e.target.closest('button[data-act]');if(!b)return;const {act,id}=b.dataset,t=taskFor(id);if(act==='start')startTask(id);if(act==='delete'){if(confirm(`Delete "${t.name}"?`)){state.tasks=state.tasks.filter(x=>x.id!==id);if(state.timer?.id===id)state.timer=null;save();render()}}if(act==='edit'){editing=id;document.getElementById('form-title').textContent='EDIT MISSION';document.getElementById('task-name').value=t.name;document.getElementById('task-duration').value=t.duration;document.getElementById('task-time').value=t.time||'';document.getElementById('task-reward').value=t.reward;document.getElementById('task-icon').value=t.icon||'🎯';document.getElementById('task-category').value=t.category||'Study';document.getElementById('task-priority').value=t.priority||'Normal';document.getElementById('task-repeat').value=t.repeat||'daily';document.getElementById('form-panel').classList.remove('hidden')}}
+document.getElementById('start-btn').onclick=()=>{if(state.timer?.status==='ready'){state.timer.status='running';state.timer.startedAt=Date.now();state.timer.endsAt=Date.now()+state.timer.remaining*1000;save();renderTimer()}};
 document.getElementById('pause-btn').onclick=pauseTimer;document.getElementById('resume-btn').onclick=resumeTimer;document.getElementById('reset-btn').onclick=resetTimer;
 document.getElementById('all-reset').onclick=()=>{if(confirm('Reset today’s completion status? Crowns already earned will remain.')){state.tasks.forEach(t=>t.done=false);state.timer=null;save();render();notify('Today’s missions have been reset.')}};
-function tick(){if(state.timer?.status==='running'){const rem=(state.timer.endsAt-Date.now())/1000;if(rem<=0){completeTask(state.timer.id)}else renderTimer()}if(state.day!==todayKey())render()}
+function tick(){checkReminders();if(state.timer?.status==='running'){const rem=(state.timer.endsAt-Date.now())/1000;if(rem<=0){completeTask(state.timer.id)}else renderTimer()}if(state.day!==todayKey())render()}
 setInterval(tick,250);
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+if('Notification'in window&&Notification.permission==='granted')document.getElementById('reminder-status').textContent='Notifications enabled';
 render();
 </script>
 </body></html>
