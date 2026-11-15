@@ -1,21 +1,19 @@
-DISCIPLINE QUEST — VERSION 3
+DISCIPLINE QUEST V4
 
-V3 adds productivity analytics (tasks + focused timer minutes), category and priority tags, daily/weekday/weekend recurrence, and browser notifications for scheduled missions while the app is open.
+V4 adds: player profile/name, four themes, optional completion sound, JSON backup/restore, and CSV statistics export. It retains the existing localStorage key disciplineQuest.v1 so V1/V2/V3 progress remains on the same browser installation.
 
 UPDATE YOUR EXISTING GITHUB PAGES REPOSITORY
-1. Keep a copy of your current V2 ZIP as a backup.
-2. Extract this V3 ZIP.
-3. Upload all five files into the ROOT of your existing Discipline-quest repository, replacing the old files.
-4. Commit the changes to the main branch and wait for the Pages deployment to finish.
-5. Reopen the installed app. If it still shows V2, close it fully and reopen; refresh the site in Chrome if needed.
+1. Download and extract this ZIP.
+2. Open your existing Discipline-quest repository in Chrome.
+3. Upload all five files to the repository root, replacing the previous versions.
+4. Commit the changes to the main branch.
+5. Wait for GitHub Pages deployment to complete.
+6. Close and reopen the installed app. If the old version remains, open the site in Chrome and refresh once.
 
-DATA & PRIVACY
-- V3 keeps the same localStorage key (disciplineQuest.v1), so existing V1/V2 crowns, XP, badges, calendar and missions are intended to remain.
-- Analytics for focus minutes starts recording from V3 onward; old sessions cannot be reconstructed.
-- Data remains on this device/browser. Cloud backup is planned for V4.
-- Notification reminders work while the app is open; they are not guaranteed when it is fully closed. Browser/Android notification permission is required.
-
-TEST AFTER UPDATING
-- Create a mission and choose category, priority and repeat schedule.
-- Enable notifications and set a test mission time a few minutes ahead.
-- Complete a short focus timer and check the analytics dashboard.
+IMPORTANT
+- Do not clear browser/site data or uninstall the app during the update.
+- Download a backup from Data Vault after updating.
+- Restoring a backup replaces the current local app data.
+- CSV export contains completed mission records available in the app.
+- All data remains on this device unless you manually export and store a backup.
+- Sound and visual themes are optional.

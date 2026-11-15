@@ -48,11 +48,23 @@ footer{text-align:center;color:#77798d;font-size:10px;margin-top:28px}
 .task-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}.tag{font-size:9px;border:1px solid #484b63;color:#c4c5d1;padding:2px 6px;border-radius:99px}.tag.high{border-color:#8c4d53;color:#ffb7b7}.tag.urgent{border-color:#bd7940;color:#ffd19a}
 .field select{min-height:42px}.reminder-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.hint{font-size:10px;color:#a5a6b8;margin-top:8px}
 @media(max-width:430px){.v3stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* V4 personalization themes */
+body[data-theme="ocean"]{--gold:#79c9e8;--gold2:#367c9b;--bg:#0d1720;--panel:#142633;--panel2:#1c3544;--line:#315365}
+body[data-theme="violet"]{--gold:#c5a1ff;--gold2:#7954ad;--bg:#151020;--panel:#211a30;--panel2:#302440;--line:#49365f}
+body[data-theme="rose"]{--gold:#f0a5b8;--gold2:#a85e76;--bg:#1b1118;--panel:#2a1b25;--panel2:#3a2632;--line:#573747}
+.v4-profile{display:flex;align-items:center;gap:13px;background:linear-gradient(130deg,#29263a,#171927);border:1px solid #665437;border-radius:17px;padding:14px;margin:14px 0}
+.v4-avatar{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:#393047;color:var(--gold);font-size:25px}
+.v4-profile strong{font-size:16px}.v4-profile small{display:block;color:var(--muted);font-size:11px}
+.v4-actions{display:flex;gap:8px;flex-wrap:wrap}.v4-actions .btn{flex:1;min-width:130px}
+.file-input{display:none}.setting-note{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.5}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header><div class="brand"><div class="crest">♛</div><div><h1>DISCIPLINE QUEST</h1><div class="sub">YOUR DAILY MISSIONS</div></div></div><div class="level" id="level">LEVEL 1</div></header>
+<section class="v4-profile"><div class="v4-avatar">♛</div><div style="flex:1;min-width:0"><strong id="profile-name-display">Quest Player</strong><small id="profile-subtitle">Your discipline journey</small></div><div class="level" id="profile-level">LEVEL 1</div></section>
 <section class="hero">
  <div class="hero-top"><div><div class="eyebrow">TODAY'S CAMPAIGN</div><div class="date" id="today"></div></div><div class="crowns"><span id="crowns">0</span> ♛<small>TOTAL CROWNS</small></div></div>
  <div class="stats"><div class="stat"><b id="completed">0/0</b><span>MISSIONS DONE</span></div><div class="stat"><b id="streak">0 🔥</b><span>DAY STREAK</span></div><div class="stat"><b id="xp">0 XP</b><span>EXPERIENCE</span></div></div>
@@ -91,13 +103,23 @@ footer{text-align:center;color:#77798d;font-size:10px;margin-top:28px}
 <section class="panel"><h3>MONTHLY QUEST CALENDAR <span class="muted" id="month-label"></span></h3><div class="monthgrid" id="month-calendar"></div></section>
 <div class="quote-overlay hidden" id="quote-overlay"><div class="quote-box"><div style="font-size:34px;color:#e7bd63">✦ ♛ ✦</div><div class="eyebrow">MISSION ACCOMPLISHED</div><h2>You showed up.</h2><div class="qreward" id="quote-reward">+0 ♛</div><blockquote id="quote-message"></blockquote><div class="muted">A DISCIPLINE REMINDER</div><button class="btn" style="width:100%;margin-top:18px" id="quote-dismiss">CONTINUE YOUR QUEST</button></div></div>
 
-<footer>Progress is saved on this device · Discipline over motivation</footer>
+<section class="panel" id="profile-settings"><h3>PLAYER PROFILE & SETTINGS</h3>
+ <div class="form-grid">
+  <div class="field full"><label for="player-name">PLAYER NAME</label><input id="player-name" maxlength="24" placeholder="Enter your player name"></div>
+  <div class="field"><label for="theme-choice">APP THEME</label><select id="theme-choice"><option value="gold">Midnight Gold</option><option value="ocean">Ocean Blue</option><option value="violet">Arcane Violet</option><option value="rose">Rose Ember</option></select></div>
+  <div class="field"><label for="sound-choice">COMPLETION SOUND</label><select id="sound-choice"><option value="on">On</option><option value="off">Off</option></select></div>
+ </div>
+ <div class="form-actions"><button class="btn" id="save-settings">SAVE SETTINGS</button></div>
+ <div class="setting-note">Your profile name and theme are saved on this device. Sound plays only after a mission is completed while the app is active.</div>
+ </section>
+ <section class="panel"><h3>DATA VAULT · BACKUP & EXPORT</h3><div class="v4-actions"><button class="btn secondary" id="backup-export">DOWNLOAD BACKUP</button><button class="btn secondary" id="backup-import-trigger">RESTORE BACKUP</button><button class="btn secondary" id="stats-export">EXPORT CSV STATS</button><input class="file-input" id="backup-file" type="file" accept=".json,application/json"></div><div class="setting-note">Backups include missions, crowns, XP, achievements, calendar records and focus history. Keep backup files somewhere safe. Restoring replaces the app's current saved data on this device.</div></section>
+<footer>V4 · Your journey, your settings · Discipline over motivation</footer>
 </div>
 <div class="toast hidden" id="toast"></div>
 <script>
 const KEY='disciplineQuest.v1';
 const todayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
-const defaultState=()=>({tasks:[],crowns:0,xp:0,streak:0,lastPerfect:null,day:todayKey(),days:{},timer:null,selected:null,penaltyDates:[],quoteHistory:[],unlocked:[],completionLog:[],totalFocusMinutes:0,reminderFired:[]});
+const defaultState=()=>({tasks:[],crowns:0,xp:0,streak:0,lastPerfect:null,day:todayKey(),days:{},timer:null,selected:null,penaltyDates:[],quoteHistory:[],unlocked:[],completionLog:[],totalFocusMinutes:0,reminderFired:[],profileName:'Quest Player',theme:'gold',sound:true});
 let state=load();
 function load(){try{const x={...defaultState(),...JSON.parse(localStorage.getItem(KEY)||'{}')};x.completionLog=x.completionLog||[];x.reminderFired=x.reminderFired||[];x.tasks=x.tasks.map(t=>({...t,category:t.category||'Study',priority:t.priority||'Normal',repeat:t.repeat||'daily',scheduledToday:t.scheduledToday!==false}));return x}catch{return defaultState()}}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
@@ -138,7 +160,7 @@ function renderTasks(){
  });
 }
 function renderHistory(){const root=document.getElementById('history');const days=Object.entries(state.days).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);root.innerHTML=days.length?days.map(([d,x])=>`<div class="day-chip"><b>${x.done}/${x.total} ${x.perfect?'🏆':''}</b>${new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</div>`).join(''):'<span class="muted">Your completed days will appear here.</span>'}
-function render(){rollover();updateHeader();renderTasks();renderHistory();renderTimer();renderAchievements();renderMonthCalendar();renderAnalytics()}
+function render(){rollover();updateHeader();renderTasks();renderHistory();renderTimer();renderAchievements();renderMonthCalendar();renderAnalytics();applyV4Settings()}
 function startTask(id){const t=taskFor(id);if(!t||t.done)return;state.selected=id;state.timer={id,status:'ready',duration:t.duration*60,remaining:t.duration*60};save();renderTimer();notify('Mission selected. Press START when you are ready.')}
 function fmt(s){s=Math.max(0,Math.ceil(s));return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
 function renderTimer(){
@@ -153,7 +175,7 @@ function renderTimer(){
 function pauseTimer(){if(!state.timer||state.timer.status!=='running')return;state.timer.remaining=Math.max(0,(state.timer.endsAt-Date.now())/1000);state.timer.focusSeconds=(state.timer.focusSeconds||0)+Math.max(0,(Date.now()-(state.timer.startedAt||Date.now()))/1000);state.timer.status='paused';save();renderTimer()}
 function resumeTimer(){if(!state.timer||state.timer.status!=='paused')return;state.timer.endsAt=Date.now()+state.timer.remaining*1000;state.timer.startedAt=Date.now();state.timer.status='running';save();renderTimer()}
 function resetTimer(){if(!state.timer)return;const t=taskFor(state.timer.id);state.timer={id:state.timer.id,status:'ready',duration:t.duration*60,remaining:t.duration*60};save();renderTimer()}
-function completeTask(id){const t=taskFor(id);if(!t||t.done)return;t.done=true;t.pending=false;const focused=(state.timer?.focusSeconds||0)+(state.timer?.status==='running'?Math.max(0,(Date.now()-(state.timer.startedAt||Date.now()))/1000):0);const mins=Math.max(0,Math.round(focused/60));state.totalFocusMinutes=(state.totalFocusMinutes||0)+mins;state.completionLog=state.completionLog||[];state.completionLog.push({date:state.day,name:t.name,category:t.category||'Study',minutes:mins,reward:Number(t.reward)});state.crowns+=Number(t.reward);state.xp+=Number(t.reward);const active=state.tasks.filter(x=>x.scheduledToday!==false);state.days[state.day]={done:active.filter(x=>x.done).length,total:active.length,perfect:active.length>0&&active.every(x=>x.done)};state.timer=null;save();render();celebrate(t)}
+function completeTask(id){const t=taskFor(id);if(!t||t.done)return;t.done=true;t.pending=false;const focused=(state.timer?.focusSeconds||0)+(state.timer?.status==='running'?Math.max(0,(Date.now()-(state.timer.startedAt||Date.now()))/1000):0);const mins=Math.max(0,Math.round(focused/60));state.totalFocusMinutes=(state.totalFocusMinutes||0)+mins;state.completionLog=state.completionLog||[];state.completionLog.push({date:state.day,name:t.name,category:t.category||'Study',minutes:mins,reward:Number(t.reward)});state.crowns+=Number(t.reward);state.xp+=Number(t.reward);const active=state.tasks.filter(x=>x.scheduledToday!==false);state.days[state.day]={done:active.filter(x=>x.done).length,total:active.length,perfect:active.length>0&&active.every(x=>x.done)};state.timer=null;save();completionSound();render();celebrate(t)}
 function renderAnalytics(){
  const log=state.completionLog||[],now=new Date(),days=[];
  for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;const items=log.filter(x=>x.date===key);days.push({key,label:d.toLocaleDateString(undefined,{weekday:'short'}),tasks:items.length,minutes:items.reduce((n,x)=>n+(x.minutes||0),0)});}
@@ -168,6 +190,17 @@ function fmtMinutes(n){return n>=60?`${Math.floor(n/60)}h ${n%60}m`:`${n}m`}
 async function enableReminders(){if(!('Notification'in window)){notify('Notifications are not supported by this browser.');return}const result=await Notification.requestPermission();document.getElementById('reminder-status').textContent=result==='granted'?'Notifications enabled':result==='denied'?'Notifications blocked in browser settings':'Permission not granted';if(result==='granted')notify('Reminders enabled while the app is open.')}
 document.getElementById('enable-reminders').onclick=enableReminders;
 function checkReminders(){if(!('Notification'in window)||Notification.permission!=='granted')return;const now=new Date(),hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0'),stamp=todayKey()+'T'+hh+':'+mm;state.reminderFired=state.reminderFired||[];state.tasks.filter(t=>t.scheduledToday!==false&&!t.done&&t.time===hh+':'+mm).forEach(t=>{const key=stamp+'|'+t.id;if(state.reminderFired.includes(key))return;new Notification('Discipline Quest · Mission time',{body:`${t.name} is scheduled now. Time to begin your quest!`});state.reminderFired.push(key);save()})}
+
+function applyV4Settings(){document.body.dataset.theme=state.theme||'gold';const name=state.profileName||'Quest Player';const display=document.getElementById('profile-name-display');if(display)display.textContent=name;const sub=document.getElementById('profile-subtitle');if(sub)sub.textContent=`${state.xp||0} XP · ${state.crowns||0} crowns`;const lvl=document.getElementById('profile-level');if(lvl)lvl.textContent='LEVEL '+(Math.floor((state.xp||0)/100)+1);const ni=document.getElementById('player-name');if(ni&&document.activeElement!==ni)ni.value=name;const th=document.getElementById('theme-choice');if(th)th.value=state.theme||'gold';const so=document.getElementById('sound-choice');if(so)so.value=state.sound===false?'off':'on'}
+function completionSound(){if(state.sound===false)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(660,c.currentTime);o.frequency.setValueAtTime(880,c.currentTime+.12);g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.12,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.32);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.34);o.onended=()=>c.close()}catch(e){}}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exportBackup(){save();const data={app:'Discipline Quest',version:4,exportedAt:new Date().toISOString(),state};downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),`discipline-quest-backup-${todayKey()}.json`);notify('Backup downloaded.')}
+function exportStats(){const rows=[['Date','Mission','Category','Focused minutes','Crowns'],...(state.completionLog||[]).map(x=>[x.date,x.name,x.category||'Study',x.minutes||0,x.reward||0])];const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),`discipline-quest-stats-${todayKey()}.csv`);notify('Statistics exported as CSV.')}
+function validBackup(x){return x&&typeof x==='object'&&x.state&&typeof x.state==='object'&&Array.isArray(x.state.tasks)&&typeof x.state.crowns==='number'&&typeof x.state.xp==='number'&&x.state.days&&typeof x.state.days==='object'}
+document.getElementById('save-settings').onclick=()=>{state.profileName=(document.getElementById('player-name').value.trim()||'Quest Player').slice(0,24);state.theme=document.getElementById('theme-choice').value;state.sound=document.getElementById('sound-choice').value==='on';save();applyV4Settings();notify('Profile settings saved.')};
+document.getElementById('backup-export').onclick=exportBackup;document.getElementById('stats-export').onclick=exportStats;document.getElementById('backup-import-trigger').onclick=()=>document.getElementById('backup-file').click();
+document.getElementById('backup-file').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!validBackup(data))throw new Error('invalid');if(!confirm('Restore this backup? Your current saved progress on this device will be replaced.'))return;state={...defaultState(),...data.state};state.tasks=(state.tasks||[]).map(t=>({...t,category:t.category||'Study',priority:t.priority||'Normal',repeat:t.repeat||'daily'}));save();applyV4Settings();render();notify('Backup restored successfully.')}catch(err){notify('That backup file is not valid for Discipline Quest.')}finally{e.target.value=''}};
+
 const DISCIPLINE_QUOTES=[
 "Small actions repeated daily create extraordinary results.",
 "You do not need to feel ready. You only need to begin.",
