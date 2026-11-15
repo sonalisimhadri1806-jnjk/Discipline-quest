@@ -29,6 +29,19 @@ h1{font-size:18px;letter-spacing:.13em;margin:0}.sub{font-size:11px;color:var(--
 footer{text-align:center;color:#77798d;font-size:10px;margin-top:28px}
 @media(max-width:520px){.app{padding:17px 12px 45px}.timer-area{grid-template-columns:125px 1fr;gap:13px}.ring{width:125px;height:125px}.ring-text strong{font-size:21px}.task{grid-template-columns:38px 1fr}.task-actions{grid-column:2;justify-content:flex-start}.stats{gap:6px}.stat{padding:9px}.stat b{font-size:17px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.v2grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.v2item{background:#222438;border:1px solid #383b52;border-radius:13px;padding:12px}
+.v2item b{display:block;font-size:12px}.v2item small{color:#a5a6b8;font-size:10px}
+.monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.monthgrid span{font-size:10px;text-align:center;color:#a5a6b8;padding:5px 0}
+.monthgrid .day{border:1px solid #30334b;background:#222438;border-radius:8px;min-height:38px;padding:5px 2px;color:#eee;text-align:center;font-size:11px}
+.monthgrid .perfect{background:#20382e;border-color:#3e795b}.monthgrid .partial{background:#393123;border-color:#78613b}.monthgrid .today{border-color:#e7bd63;color:#e7bd63}
+.quote-overlay{position:fixed;inset:0;background:#080910e8;display:grid;place-items:center;padding:20px;z-index:30}
+.quote-box{width:min(100%,420px);background:linear-gradient(145deg,#29263a,#171927);border:1px solid #80653a;border-radius:22px;padding:25px;text-align:center;box-shadow:0 20px 70px #000b}
+.quote-box blockquote{font-size:21px;line-height:1.45;font-weight:750;color:#f6e8c8;margin:18px 0}
+.quote-box .qreward{font-size:24px;color:#e7bd63;font-weight:850}
+@media(max-width:430px){.v2grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -63,13 +76,17 @@ footer{text-align:center;color:#77798d;font-size:10px;margin-top:28px}
  </div>
 </section>
 <section class="panel"><h3>RECENT HISTORY</h3><div class="history" id="history"></div></section>
+<section class="panel"><h3>ACHIEVEMENT GALLERY</h3><div class="v2grid" id="achievements"></div></section>
+<section class="panel"><h3>MONTHLY QUEST CALENDAR <span class="muted" id="month-label"></span></h3><div class="monthgrid" id="month-calendar"></div></section>
+<div class="quote-overlay hidden" id="quote-overlay"><div class="quote-box"><div style="font-size:34px;color:#e7bd63">✦ ♛ ✦</div><div class="eyebrow">MISSION ACCOMPLISHED</div><h2>You showed up.</h2><div class="qreward" id="quote-reward">+0 ♛</div><blockquote id="quote-message"></blockquote><div class="muted">A DISCIPLINE REMINDER</div><button class="btn" style="width:100%;margin-top:18px" id="quote-dismiss">CONTINUE YOUR QUEST</button></div></div>
+
 <footer>Progress is saved on this device · Discipline over motivation</footer>
 </div>
 <div class="toast hidden" id="toast"></div>
 <script>
 const KEY='disciplineQuest.v1';
 const todayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
-const defaultState=()=>({tasks:[],crowns:0,xp:0,streak:0,lastPerfect:null,day:todayKey(),days:{},timer:null,selected:null,penaltyDates:[]});
+const defaultState=()=>({tasks:[],crowns:0,xp:0,streak:0,lastPerfect:null,day:todayKey(),days:{},timer:null,selected:null,penaltyDates:[],quoteHistory:[],unlocked:[]});
 let state=load();
 function load(){try{return {...defaultState(),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return defaultState()}}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
@@ -109,7 +126,7 @@ function renderTasks(){
  });
 }
 function renderHistory(){const root=document.getElementById('history');const days=Object.entries(state.days).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);root.innerHTML=days.length?days.map(([d,x])=>`<div class="day-chip"><b>${x.done}/${x.total} ${x.perfect?'🏆':''}</b>${new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</div>`).join(''):'<span class="muted">Your completed days will appear here.</span>'}
-function render(){rollover();updateHeader();renderTasks();renderHistory();renderTimer()}
+function render(){rollover();updateHeader();renderTasks();renderHistory();renderTimer();renderAchievements();renderMonthCalendar()}
 function startTask(id){const t=taskFor(id);if(!t||t.done)return;state.selected=id;state.timer={id,status:'ready',duration:t.duration*60,remaining:t.duration*60};save();renderTimer();notify('Mission selected. Press START when you are ready.')}
 function fmt(s){s=Math.max(0,Math.ceil(s));return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
 function renderTimer(){
@@ -124,9 +141,57 @@ function renderTimer(){
 function pauseTimer(){if(!state.timer||state.timer.status!=='running')return;state.timer.remaining=Math.max(0,(state.timer.endsAt-Date.now())/1000);state.timer.status='paused';save();renderTimer()}
 function resumeTimer(){if(!state.timer||state.timer.status!=='paused')return;state.timer.endsAt=Date.now()+state.timer.remaining*1000;state.timer.status='running';save();renderTimer()}
 function resetTimer(){if(!state.timer)return;const t=taskFor(state.timer.id);state.timer={id:state.timer.id,status:'ready',duration:t.duration*60,remaining:t.duration*60};save();renderTimer()}
-function completeTask(id){const t=taskFor(id);if(!t||t.done)return;t.done=true;t.pending=false;state.crowns+=Number(t.reward);state.xp+=Number(t.reward);state.days[state.day]={done:state.tasks.filter(x=>x.done).length,total:state.tasks.length,perfect:false};state.timer=null;save();render();celebrate(t)}
-function celebrate(t){const box=document.createElement('div');box.className='toast';box.innerHTML=`✦ MISSION COMPLETE! +${t.reward} crowns ✦`;document.body.appendChild(box);setTimeout(()=>box.remove(),3200);notify('Mission complete! You earned '+t.reward+' crowns.')}
+function completeTask(id){const t=taskFor(id);if(!t||t.done)return;t.done=true;t.pending=false;state.crowns+=Number(t.reward);state.xp+=Number(t.reward);state.days[state.day]={done:state.tasks.filter(x=>x.done).length,total:state.tasks.length,perfect:state.tasks.length>0&&state.tasks.every(x=>x.done)};state.timer=null;save();render();celebrate(t)}
+const DISCIPLINE_QUOTES=[
+"Small actions repeated daily create extraordinary results.",
+"You do not need to feel ready. You only need to begin.",
+"Discipline is choosing what matters most over what feels easiest.",
+"A focused hour today is a gift to your future self.",
+"Progress is built quietly, one completed promise at a time.",
+"Do the next right thing. Then do it again tomorrow.",
+"Your future is shaped by the habits you practise today.",
+"Consistency turns ordinary effort into extraordinary progress.",
+"You are allowed to go slowly. Just keep moving.",
+"A finished small task is better than a perfect plan left untouched.",
+"Every time you keep a promise to yourself, trust grows.",
+"Make today count, not because it is perfect, but because you showed up."
+];
+const BADGES=[
+["🌱","First Step","Complete your first mission",()=>state.xp>=1],
+["⚔️","Quest Starter","Complete 5 missions",()=>completedCount()>=5],
+["🛡️","Steady Warrior","Complete 25 missions",()=>completedCount()>=25],
+["🏆","Perfect Day","Complete every mission in a day",()=>Object.values(state.days).some(d=>d.perfect)],
+["🔥","Three-Day Flame","Build a 3-day streak",()=>state.streak>=3],
+["♛","Crown Collector","Earn 100 crowns",()=>state.crowns>=100],
+["✨","Rising Star","Earn 500 XP",()=>state.xp>=500]
+];
+function completedCount(){return Object.values(state.days).reduce((n,d)=>n+(d.done||0),0)+state.tasks.filter(t=>t.done).length}
+function renderAchievements(){
+ const el=document.getElementById('achievements');if(!el)return;
+ el.innerHTML=BADGES.map(([ico,name,desc,test])=>`<div class="v2item" style="opacity:${test()?1:.42}"><b>${ico} ${name} ${test()?'✓':'🔒'}</b><small>${desc}</small></div>`).join('');
+}
+function renderMonthCalendar(){
+ const el=document.getElementById('month-calendar');if(!el)return;
+ const now=new Date(),y=now.getFullYear(),m=now.getMonth(),first=new Date(y,m,1).getDay(),count=new Date(y,m+1,0).getDate();
+ document.getElementById('month-label').textContent=now.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+ el.innerHTML=['S','M','T','W','T','F','S'].map(x=>`<span>${x}</span>`).join('');
+ for(let i=0;i<first;i++)el.innerHTML+='<span></span>';
+ for(let d=1;d<=count;d++){const key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,rec=state.days[key],cls='day '+(key===todayKey()?'today ':'')+(rec?.perfect?'perfect':rec?.done?'partial':'');el.innerHTML+=`<div class="${cls}">${d}${rec?`<br><small>${rec.done}/${rec.total}</small>`:''}</div>`}
+}
+function celebrate(t){
+ const old=state.quoteHistory||[],choices=DISCIPLINE_QUOTES.filter(q=>!old.slice(-4).includes(q));
+ const quote=choices[Math.floor(Math.random()*choices.length)]||DISCIPLINE_QUOTES[0];
+ state.quoteHistory=[...old,quote].slice(-20);
+ state.unlocked=state.unlocked||[];
+ const newly=BADGES.filter(b=>b[3]()&&!state.unlocked.includes(b[1])).map(b=>b[1]);
+ state.unlocked=[...state.unlocked,...newly];save();
+ document.getElementById('quote-reward').textContent='+'+t.reward+' ♛';
+ document.getElementById('quote-message').textContent='“'+quote+'”'+(newly.length?'  ✦ Badge unlocked: '+newly.join(', '):'');
+ document.getElementById('quote-overlay').classList.remove('hidden');
+ renderAchievements();
+}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.getElementById('quote-dismiss').onclick=()=>document.getElementById('quote-overlay').classList.add('hidden');
 let editing=null;
 document.getElementById('add-toggle').onclick=()=>{editing=null;document.getElementById('task-form').reset();document.getElementById('form-title').textContent='CREATE A MISSION';document.getElementById('form-panel').classList.remove('hidden');document.getElementById('task-name').focus()};
 document.getElementById('cancel-form').onclick=()=>document.getElementById('form-panel').classList.add('hidden');
