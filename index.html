@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10111b">
+<meta name="description" content="Discipline Quest — turn daily goals into missions.">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Discipline Quest</title>
+<style>
+:root{--bg:#10111b;--panel:#191b2a;--panel2:#222438;--line:#30334b;--gold:#e7bd63;--gold2:#9d7838;--text:#f4f1e9;--muted:#a5a6b8;--green:#76d6a0;--red:#f18c8c;--blue:#8eb5ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#30304a 0%,var(--bg) 58%);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;padding:22px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.brand{display:flex;gap:11px;align-items:center}.crest{width:44px;height:44px;border:1px solid #82683d;border-radius:14px;display:grid;place-items:center;color:var(--gold);font-size:25px;background:linear-gradient(145deg,#29263a,#151522);box-shadow:0 0 24px #d8a94b18}
+h1{font-size:18px;letter-spacing:.13em;margin:0}.sub{font-size:11px;color:var(--muted);letter-spacing:.17em}.level{border:1px solid var(--line);background:#191b2a;border-radius:99px;padding:7px 12px;color:var(--gold);font-size:12px;font-weight:750}
+.hero{background:linear-gradient(130deg,#25243a,#171927 70%);border:1px solid #39364a;border-radius:22px;padding:20px;margin-bottom:16px;box-shadow:0 14px 40px #0003}
+.hero-top{display:flex;justify-content:space-between;gap:12px;align-items:start}.eyebrow{color:var(--gold);font-size:11px;letter-spacing:.18em;font-weight:800}.date{color:var(--muted);font-size:12px;margin-top:4px}.crowns{font-size:25px;color:var(--gold);font-weight:850}.crowns small{display:block;text-align:right;color:var(--muted);font-size:10px;font-weight:500;letter-spacing:.1em}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:19px}.stat{background:#10121e80;border:1px solid #ffffff0d;border-radius:13px;padding:11px}.stat b{display:block;font-size:20px}.stat span{font-size:10px;color:var(--muted);letter-spacing:.08em}
+.progress-wrap{margin-top:17px}.progress-label{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:7px}.bar{height:8px;background:#39394c;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#a17a3c,var(--gold));border-radius:99px;transition:width .3s}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin:24px 2px 11px}.section-head h2{font-size:13px;letter-spacing:.14em;margin:0}.muted{color:var(--muted);font-size:12px}
+.btn{border:1px solid #675536;background:linear-gradient(135deg,#4a3b25,#2b2630);color:#ffe2a0;border-radius:12px;padding:10px 14px;font-weight:750}.btn.secondary{background:#222438;border-color:var(--line);color:var(--text)}.btn.danger{background:#39252c;border-color:#75404b;color:#ffc0c0}.btn:disabled{opacity:.45;cursor:not-allowed}
+.task-list{display:grid;gap:10px}.task{display:grid;grid-template-columns:42px 1fr auto;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:13px}.task.done{border-color:#3d755d;background:linear-gradient(110deg,#192a28,#191b2a)}.task.pending{border-color:#7b5640}.task-icon{width:40px;height:40px;border-radius:13px;background:#29283c;display:grid;place-items:center;font-size:19px}.task-name{font-weight:750}.task-meta{font-size:11px;color:var(--muted);margin-top:3px}.task-actions{display:flex;gap:6px;align-items:center}.mini{border:1px solid var(--line);background:#25273a;color:var(--text);border-radius:9px;padding:7px 9px;font-size:11px}.reward{color:var(--gold);font-weight:800;font-size:12px;white-space:nowrap}.empty{padding:25px;text-align:center;border:1px dashed #45475c;border-radius:16px;color:var(--muted)}
+.bottom-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:19px;padding:17px;margin-top:16px}.panel h3{font-size:12px;letter-spacing:.13em;margin:0 0 12px}
+.timer-area{display:grid;grid-template-columns:160px 1fr;align-items:center;gap:20px}.ring{width:160px;height:160px;position:relative}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}.ring circle{fill:none;stroke-width:10}.ring .track{stroke:#34364b}.ring .arc{stroke:var(--gold);stroke-linecap:round;stroke-dasharray:408.4;stroke-dashoffset:408.4;transition:stroke-dashoffset .2s}.ring-text{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.ring-text strong{font-size:26px;font-variant-numeric:tabular-nums}.ring-text span{font-size:10px;color:var(--muted);letter-spacing:.12em}.timer-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.timer-title{font-size:18px;font-weight:800}.timer-note{font-size:12px;color:var(--muted);margin-top:5px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:var(--muted)}input,select{width:100%;background:#111320;border:1px solid #3a3d54;color:var(--text);border-radius:10px;padding:11px;outline:none}input:focus,select:focus{border-color:var(--gold)}.form-actions{display:flex;gap:8px;margin-top:13px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#29283b;border:1px solid #7c653e;color:#ffe5ad;padding:11px 16px;border-radius:99px;box-shadow:0 8px 30px #0008;z-index:10;max-width:90vw;text-align:center}
+.hidden{display:none!important}.history{display:flex;gap:8px;flex-wrap:wrap}.day-chip{background:#222438;border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:11px;color:var(--muted)}.day-chip b{display:block;color:var(--text);font-size:15px}
+footer{text-align:center;color:#77798d;font-size:10px;margin-top:28px}
+@media(max-width:520px){.app{padding:17px 12px 45px}.timer-area{grid-template-columns:125px 1fr;gap:13px}.ring{width:125px;height:125px}.ring-text strong{font-size:21px}.task{grid-template-columns:38px 1fr}.task-actions{grid-column:2;justify-content:flex-start}.stats{gap:6px}.stat{padding:9px}.stat b{font-size:17px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><div class="crest">♛</div><div><h1>DISCIPLINE QUEST</h1><div class="sub">YOUR DAILY MISSIONS</div></div></div><div class="level" id="level">LEVEL 1</div></header>
+<section class="hero">
+ <div class="hero-top"><div><div class="eyebrow">TODAY'S CAMPAIGN</div><div class="date" id="today"></div></div><div class="crowns"><span id="crowns">0</span> ♛<small>TOTAL CROWNS</small></div></div>
+ <div class="stats"><div class="stat"><b id="completed">0/0</b><span>MISSIONS DONE</span></div><div class="stat"><b id="streak">0 🔥</b><span>DAY STREAK</span></div><div class="stat"><b id="xp">0 XP</b><span>EXPERIENCE</span></div></div>
+ <div class="progress-wrap"><div class="progress-label"><span>DAILY COMPLETION</span><b id="percent">0%</b></div><div class="bar"><i id="progress"></i></div></div>
+</section>
+<div class="section-head"><h2>ACTIVE MISSIONS</h2><span class="muted" id="pending-label">0 pending</span></div>
+<div class="task-list" id="tasks"></div>
+<div class="bottom-actions"><button class="btn" id="add-toggle">＋ ADD MISSION</button><button class="btn secondary" id="all-reset">RESET TODAY</button></div>
+<section class="panel hidden" id="form-panel">
+ <h3 id="form-title">CREATE A MISSION</h3>
+ <form id="task-form">
+  <div class="form-grid">
+   <div class="field full"><label for="task-name">MISSION NAME</label><input id="task-name" required maxlength="45" placeholder="e.g. Deep study session"></div>
+   <div class="field"><label for="task-duration">DURATION (MINUTES)</label><input id="task-duration" type="number" min="1" max="600" value="30" required></div>
+   <div class="field"><label for="task-time">SCHEDULED TIME</label><input id="task-time" type="time" value="18:00"></div>
+   <div class="field"><label for="task-reward">CROWN REWARD</label><input id="task-reward" type="number" min="1" max="500" value="10" required></div>
+   <div class="field"><label for="task-icon">ICON</label><select id="task-icon"><option>📚</option><option>💻</option><option>🏃</option><option>🧘</option><option>🎨</option><option>✍️</option><option>🎯</option><option>💪</option><option>🎧</option></select></div>
+  </div>
+  <div class="form-actions"><button class="btn" type="submit">SAVE MISSION</button><button class="btn secondary" type="button" id="cancel-form">CANCEL</button></div>
+ </form>
+</section>
+<section class="panel" id="timer-panel">
+ <h3>FOCUS CHAMBER</h3>
+ <div class="timer-area">
+  <div class="ring"><svg viewBox="0 0 150 150"><circle class="track" cx="75" cy="75" r="65"/><circle class="arc" id="timer-arc" cx="75" cy="75" r="65"/></svg><div class="ring-text"><strong id="timer-display">00:00</strong><span id="timer-state">READY</span></div></div>
+  <div><div class="eyebrow">CURRENT MISSION</div><div class="timer-title" id="timer-task">Choose a mission</div><div class="timer-note" id="timer-note">Select Start on a mission to begin.</div><div class="timer-controls"><button class="btn" id="start-btn" disabled>START</button><button class="btn secondary" id="pause-btn" disabled>PAUSE</button><button class="btn secondary" id="resume-btn" disabled>RESUME</button><button class="btn danger" id="reset-btn" disabled>RESET</button></div></div>
+ </div>
+</section>
+<section class="panel"><h3>RECENT HISTORY</h3><div class="history" id="history"></div></section>
+<footer>Progress is saved on this device · Discipline over motivation</footer>
+</div>
+<div class="toast hidden" id="toast"></div>
+<script>
+const KEY='disciplineQuest.v1';
+const todayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const defaultState=()=>({tasks:[],crowns:0,xp:0,streak:0,lastPerfect:null,day:todayKey(),days:{},timer:null,selected:null,penaltyDates:[]});
+let state=load();
+function load(){try{return {...defaultState(),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return defaultState()}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function notify(s){const el=document.getElementById('toast');el.textContent=s;el.classList.remove('hidden');clearTimeout(notify.t);notify.t=setTimeout(()=>el.classList.add('hidden'),2600)}
+function dateLabel(){return new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}
+function minutes(n){return n>=60?`${Math.floor(n/60)}h ${n%60?`${n%60}m`:''}`:`${n} min`}
+function taskFor(id){return state.tasks.find(t=>t.id===id)}
+function rollover(){
+ const now=todayKey(); if(state.day===now)return;
+ const old=state.day, oldTasks=state.tasks.filter(t=>!t.done);
+ if(oldTasks.length){oldTasks.forEach(t=>{t.pending=true;t.dueFrom=old});state.crowns=Math.max(0,state.crowns-Math.min(15,oldTasks.length*3));state.penaltyDates.push(old);notify(`${oldTasks.length} mission(s) carried over. 3 crowns lost per missed mission (max 15).`)}
+ const completed=state.tasks.length>0&&state.tasks.every(t=>t.done);
+ if(completed){state.streak=state.lastPerfect?state.streak+1:1;state.lastPerfect=old}
+ else if(state.tasks.length){state.streak=0}
+ state.days[old]={done:state.tasks.filter(t=>t.done).length,total:state.tasks.length,perfect:completed};
+ // Carry forward unfinished missions, and recreate completed recurring missions for the new day.
+ const carried=oldTasks.map(t=>({...t,id:crypto.randomUUID(),done:false,pending:true,pendingFrom:t.dueFrom||old}));
+ const recurring=state.tasks.filter(t=>t.recurring!==false&&t.done).map(t=>({...t,id:crypto.randomUUID(),done:false,pending:false,pendingFrom:null}));
+ state.tasks=[...carried,...recurring];state.day=now;state.selected=null;state.timer=null;save();
+}
+function updateHeader(){
+ const total=state.tasks.length,done=state.tasks.filter(t=>t.done).length,pct=total?Math.round(done/total*100):0;
+ document.getElementById('today').textContent=dateLabel();document.getElementById('crowns').textContent=state.crowns;
+ document.getElementById('completed').textContent=`${done}/${total}`;document.getElementById('streak').textContent=state.streak+' 🔥';
+ document.getElementById('xp').textContent=state.xp+' XP';document.getElementById('percent').textContent=pct+'%';document.getElementById('progress').style.width=pct+'%';
+ document.getElementById('pending-label').textContent=state.tasks.filter(t=>t.pending&&!t.done).length+' pending';
+ document.getElementById('level').textContent='LEVEL '+(1+Math.floor(state.xp/250));
+}
+function renderTasks(){
+ const root=document.getElementById('tasks');root.innerHTML='';
+ if(!state.tasks.length){root.innerHTML='<div class="empty">No missions yet. Create your first daily mission to begin your quest.</div>';return}
+ [...state.tasks].sort((a,b)=>(a.time||'').localeCompare(b.time||'')).forEach(t=>{
+  const el=document.createElement('article');el.className='task '+(t.done?'done':t.pending?'pending':'');
+  const status=t.done?'COMPLETED':t.pending?'CARRIED OVER':`${t.time||'No fixed time'} · ${minutes(t.duration)}`;
+  el.innerHTML=`<div class="task-icon">${esc(t.icon||'🎯')}</div><div><div class="task-name">${esc(t.name)}</div><div class="task-meta">${status} · ${minutes(t.duration)}</div></div><div class="task-actions">${t.done?'<span class="reward">✓ DONE</span>':`<span class="reward">+${t.reward} ♛</span><button class="mini" data-act="start" data-id="${t.id}">FOCUS</button>`}<button class="mini" data-act="edit" data-id="${t.id}" aria-label="Edit">✎</button><button class="mini" data-act="delete" data-id="${t.id}" aria-label="Delete">×</button></div>`;
+  root.appendChild(el);
+ });
+}
+function renderHistory(){const root=document.getElementById('history');const days=Object.entries(state.days).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);root.innerHTML=days.length?days.map(([d,x])=>`<div class="day-chip"><b>${x.done}/${x.total} ${x.perfect?'🏆':''}</b>${new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</div>`).join(''):'<span class="muted">Your completed days will appear here.</span>'}
+function render(){rollover();updateHeader();renderTasks();renderHistory();renderTimer()}
+function startTask(id){const t=taskFor(id);if(!t||t.done)return;state.selected=id;state.timer={id,status:'ready',duration:t.duration*60,remaining:t.duration*60};save();renderTimer();notify('Mission selected. Press START when you are ready.')}
+function fmt(s){s=Math.max(0,Math.ceil(s));return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
+function renderTimer(){
+ const tm=state.timer,t=tm&&taskFor(tm.id);const display=document.getElementById('timer-display'),arc=document.getElementById('timer-arc');
+ if(!tm||!t){display.textContent='00:00';document.getElementById('timer-state').textContent='READY';document.getElementById('timer-task').textContent='Choose a mission';document.getElementById('timer-note').textContent='Select FOCUS on a mission to begin.';['start-btn','pause-btn','resume-btn','reset-btn'].forEach(id=>document.getElementById(id).disabled=true);arc.style.strokeDashoffset=408.4;return}
+ let rem=tm.status==='running'?Math.max(0,(tm.endsAt-Date.now())/1000):tm.remaining;
+ display.textContent=fmt(rem);document.getElementById('timer-state').textContent=tm.status.toUpperCase();document.getElementById('timer-task').textContent=t.name;
+ document.getElementById('timer-note').textContent=tm.status==='running'?'Stay with this mission until the timer ends.':tm.status==='paused'?'Timer paused. Resume when you are ready.':'Mission timer is ready.';
+ arc.style.strokeDashoffset=408.4*(1-rem/tm.duration);
+ document.getElementById('start-btn').disabled=tm.status!=='ready';document.getElementById('pause-btn').disabled=tm.status!=='running';document.getElementById('resume-btn').disabled=tm.status!=='paused';document.getElementById('reset-btn').disabled=false;
+}
+function pauseTimer(){if(!state.timer||state.timer.status!=='running')return;state.timer.remaining=Math.max(0,(state.timer.endsAt-Date.now())/1000);state.timer.status='paused';save();renderTimer()}
+function resumeTimer(){if(!state.timer||state.timer.status!=='paused')return;state.timer.endsAt=Date.now()+state.timer.remaining*1000;state.timer.status='running';save();renderTimer()}
+function resetTimer(){if(!state.timer)return;const t=taskFor(state.timer.id);state.timer={id:state.timer.id,status:'ready',duration:t.duration*60,remaining:t.duration*60};save();renderTimer()}
+function completeTask(id){const t=taskFor(id);if(!t||t.done)return;t.done=true;t.pending=false;state.crowns+=Number(t.reward);state.xp+=Number(t.reward);state.days[state.day]={done:state.tasks.filter(x=>x.done).length,total:state.tasks.length,perfect:false};state.timer=null;save();render();celebrate(t)}
+function celebrate(t){const box=document.createElement('div');box.className='toast';box.innerHTML=`✦ MISSION COMPLETE! +${t.reward} crowns ✦`;document.body.appendChild(box);setTimeout(()=>box.remove(),3200);notify('Mission complete! You earned '+t.reward+' crowns.')}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+let editing=null;
+document.getElementById('add-toggle').onclick=()=>{editing=null;document.getElementById('task-form').reset();document.getElementById('form-title').textContent='CREATE A MISSION';document.getElementById('form-panel').classList.remove('hidden');document.getElementById('task-name').focus()};
+document.getElementById('cancel-form').onclick=()=>document.getElementById('form-panel').classList.add('hidden');
+document.getElementById('task-form').onsubmit=e=>{e.preventDefault();const obj={name:document.getElementById('task-name').value.trim(),duration:Number(document.getElementById('task-duration').value),time:document.getElementById('task-time').value,reward:Number(document.getElementById('task-reward').value),icon:document.getElementById('task-icon').value};if(!obj.name||obj.duration<1||obj.reward<1)return;
+ if(editing){Object.assign(taskFor(editing),obj);if(state.timer?.id===editing)resetTimer()}else state.tasks.push({...obj,id:crypto.randomUUID(),done:false,pending:false,recurring:true});
+ save();document.getElementById('form-panel').classList.add('hidden');render();notify(editing?'Mission updated.':'Mission added to your daily campaign.');editing=null};
+document.getElementById('tasks').onclick=e=>{const b=e.target.closest('button[data-act]');if(!b)return;const {act,id}=b.dataset,t=taskFor(id);if(act==='start')startTask(id);if(act==='delete'){if(confirm(`Delete "${t.name}"?`)){state.tasks=state.tasks.filter(x=>x.id!==id);if(state.timer?.id===id)state.timer=null;save();render()}}if(act==='edit'){editing=id;document.getElementById('form-title').textContent='EDIT MISSION';document.getElementById('task-name').value=t.name;document.getElementById('task-duration').value=t.duration;document.getElementById('task-time').value=t.time||'';document.getElementById('task-reward').value=t.reward;document.getElementById('task-icon').value=t.icon||'🎯';document.getElementById('form-panel').classList.remove('hidden')}}
+document.getElementById('start-btn').onclick=()=>{if(state.timer?.status==='ready'){state.timer.status='running';state.timer.endsAt=Date.now()+state.timer.remaining*1000;save();renderTimer()}};
+document.getElementById('pause-btn').onclick=pauseTimer;document.getElementById('resume-btn').onclick=resumeTimer;document.getElementById('reset-btn').onclick=resetTimer;
+document.getElementById('all-reset').onclick=()=>{if(confirm('Reset today’s completion status? Crowns already earned will remain.')){state.tasks.forEach(t=>t.done=false);state.timer=null;save();render();notify('Today’s missions have been reset.')}};
+function tick(){if(state.timer?.status==='running'){const rem=(state.timer.endsAt-Date.now())/1000;if(rem<=0){completeTask(state.timer.id)}else renderTimer()}if(state.day!==todayKey())render()}
+setInterval(tick,250);
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+render();
+</script>
+</body></html>
